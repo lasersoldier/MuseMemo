@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { Cpu, ArrowRight, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Cpu, ArrowRight, Mail, Lock, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { useStore } from '../store';
 
 export const AuthView: React.FC = () => {
-  const { login, isLoading } = useStore();
+  const { login, register, isLoading } = useStore();
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +26,23 @@ export const AuthView: React.FC = () => {
       return;
     }
     
-    await login(email, password);
+    if (mode === 'register') {
+      // 注册模式下的额外验证
+      if (password.length < 6) {
+        alert('密码长度至少为6位');
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        alert('两次输入的密码不一致');
+        return;
+      }
+      
+      await register(email, password);
+    } else {
+      // 登录模式
+      await login(email, password);
+    }
   };
 
   return (
@@ -45,6 +64,24 @@ export const AuthView: React.FC = () => {
             </div>
 
             <div className="bg-[#0e0e11]/80 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl p-8 animate-in zoom-in duration-300">
+                {/* 模式切换标签 */}
+                <div className="flex rounded-xl bg-black/60 p-1 mb-6">
+                    <button
+                        type="button"
+                        onClick={() => setMode('login')}
+                        className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all ${mode === 'login' ? 'bg-white text-black' : 'text-stone-400 hover:text-stone-200'}`}
+                    >
+                        登录
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setMode('register')}
+                        className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all ${mode === 'register' ? 'bg-white text-black' : 'text-stone-400 hover:text-stone-200'}`}
+                    >
+                        注册
+                    </button>
+                </div>
+                
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">Operator ID (Email)</label>
@@ -83,13 +120,40 @@ export const AuthView: React.FC = () => {
                         </div>
                     </div>
                     
+                    {/* 注册模式下显示确认密码字段 */}
+                    {mode === 'register' && (
+                        <div>
+                            <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">Confirm Password</label>
+                            <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-600 group-focus-within:text-white transition-colors" size={16} />
+                                <input 
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    required
+                                    className="w-full pl-12 pr-12 py-4 bg-black/40 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 text-stone-200 transition-all font-mono text-sm"
+                                    placeholder="••••••••"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                />
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-600 hover:text-white transition-colors"
+                                >
+                                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    
                     <button 
                         type="submit" 
-                        disabled={isLoading || !email || !password}
+                        disabled={isLoading || !email || !password || (mode === 'register' && !confirmPassword)}
                         className="w-full py-4 bg-white text-black rounded-xl font-bold tracking-wide hover:bg-stone-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
-                        {isLoading ? 'Processing...' : 
+                        {isLoading ? 'Processing...' : mode === 'login' ?
                             <>SECURE ACCESS <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
+                            :
+                            <>CREATE ACCOUNT <UserPlus size={16} className="group-hover:translate-x-1 transition-transform" /></>
                         }
                     </button>
                 </form>

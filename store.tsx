@@ -191,6 +191,7 @@ interface StoreContextType {
   user: UserProfile | null;
   isLoading: boolean;
   login: (email: string) => Promise<void>; // Simplified for demo
+  register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
   prompts: Prompt[];
@@ -307,14 +308,28 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
         
         // Merge with system prompts if needed, and ensure creatorName is set
-        const updatedPrompts = [...DEMO_PROMPTS.filter(p => p.author === 'system'), ...data].map(prompt => {
-          // For the current user's prompts, ensure creatorName matches their current full_name
-          if (prompt.userId === userId && currentUserProfile?.full_name) {
-            return { ...prompt, creatorName: currentUserProfile.full_name };
-          }
-          // For other users' prompts, ensure creatorName is set (fallback to User if needed)
-          return { ...prompt, creatorName: prompt.creatorName || 'User' };
+        // First, create a map of existing prompts by id to avoid duplicates
+        const promptMap = new Map<string, Prompt>();
+        
+        // Add system prompts first
+        DEMO_PROMPTS.filter(p => p.author === 'system').forEach(p => {
+          promptMap.set(p.id, p);
         });
+        
+        // Add database prompts, overriding system prompts if they have the same id
+        data.forEach(prompt => {
+          // Ensure all required fields are present
+          const fullPrompt: Prompt = {
+            ...prompt,
+            creatorName: prompt.creatorName || 'User',
+            // For the current user's prompts, ensure creatorName matches their current full_name
+            ...(prompt.userId === userId && currentUserProfile?.full_name ? { creatorName: currentUserProfile.full_name } : {})
+          };
+          promptMap.set(fullPrompt.id, fullPrompt);
+        });
+        
+        // Convert map back to array
+        const updatedPrompts = Array.from(promptMap.values());
         
         setPrompts(updatedPrompts);
         console.log('Prompts fetched successfully:', updatedPrompts.length);
@@ -424,18 +439,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 console.error('Profile fetch error:', profileError);
                 console.log('Using basic profile from auth data');
                 setUser(basicProfile);
-                // Fetch User Prompts even when using basic profile
+                // Fetch user's existing prompts
                 fetchPrompts(data.user.id, supabaseClient);
               } else if (profile) {
                 setUser(profile as UserProfile);
-                // Fetch User Prompts
+                // Fetch user's existing prompts
                 fetchPrompts(data.user.id, supabaseClient);
               }
             } catch (error) {
               console.error('Error fetching profile:', error);
               console.log('Using basic profile from auth data');
               setUser(basicProfile);
-              // Fetch User Prompts even when using basic profile
+              // Fetch user's existing prompts
               fetchPrompts(data.user.id, supabaseClient);
             }
         }
@@ -445,6 +460,90 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (error: any) {
       console.error('Authentication error:', error);
       alert(error?.message || 'Authentication failed');
+      setIsLoading(false);
+    }
+  };
+  
+  const register = async (email: string, password: string) => {
+    setIsLoading(true);
+    
+    try {
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Please enter a valid email address');
+      }
+      
+      if (!password || password.length < 6) {
+        throw new Error('Password must be at least 6 characters');
+      }
+
+      // Try direct Supabase client creation as fallback
+      let supabaseClient = supabase;
+      if (!supabaseClient && import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        const { createClient } = await import('@supabase/supabase-js');
+        supabaseClient = createClient(
+          import.meta.env.VITE_SUPABASE_URL,
+          import.meta.env.VITE_SUPABASE_ANON_KEY
+        );
+      }
+
+      if (!supabaseClient) {
+        throw new Error('Registration service is not available. Please contact support.');
+      }
+
+      // User registration
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+        }
+      });
+      
+      if (error) {
+        console.error('Registration error:', error);
+        throw new Error(error.message);
+      }
+      
+      if (data.user) {
+        // Create a basic user profile from auth data
+        const basicProfile: UserProfile = {
+          id: data.user.id,
+          email: data.user.email,
+          full_name: data.user.user_metadata?.full_name || email.split('@')[0] || '',
+          avatar_url: data.user.user_metadata?.avatar_url || '',
+          created_at: new Date().toISOString(),
+          total_usage: 0,
+          subscription_tier: 'free'
+        };
+        
+        // Create user profile in database
+        try {
+          await supabaseClient.from('profiles').insert({
+            id: data.user.id,
+            email: data.user.email,
+            full_name: basicProfile.full_name,
+            avatar_url: basicProfile.avatar_url,
+            created_at: basicProfile.created_at,
+            total_usage: 0,
+            subscription_tier: 'free'
+          });
+          
+          // Reset user data
+          await resetUserData();
+          
+          setUser(basicProfile);
+          alert('Registration successful! Welcome to the platform!');
+        } catch (profileError) {
+          console.error('Error creating user profile:', profileError);
+          throw new Error('Registration successful but profile creation failed');
+        }
+      }
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      alert(error?.message || 'Registration failed');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -540,13 +639,29 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const savePublicPrompt = async (id: string) => {
+    // Update local state first for immediate feedback
     setPrompts(prev => prev.map(p => {
       if (p.id === id) {
         return { ...p, isFavorite: true, lastUsed: new Date().toISOString() };
       }
       return p;
     }));
-    // Sync to DB...
+    
+    // Sync to DB if enabled
+    if (isSupabaseEnabled && supabase && user) {
+      try {
+        // Update the prompt in the database with the user's id and isFavorite status
+        await supabase.from('prompts').update({
+          isFavorite: true, 
+          lastUsed: new Date().toISOString(),
+          // Ensure userId is set for the prompt when it's saved as favorite
+          ...(user.id ? { userId: user.id } : {})
+        }).eq('id', id);
+        console.log('Prompt saved to favorites in database');
+      } catch (error) {
+        console.error('Error saving prompt to favorites:', error);
+      }
+    }
   };
 
   const unsubscribePrompt = async (id: string) => {
@@ -560,7 +675,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     // Sync to DB if enabled
     if (isSupabaseEnabled && supabase) {
-      await supabase.from('prompts').update({ isFavorite: false }).eq('id', id);
+      try {
+        await supabase.from('prompts').update({ isFavorite: false, lastUsed: new Date().toISOString() }).eq('id', id);
+        console.log('Prompt unsubscribed from favorites in database');
+      } catch (error) {
+        console.error('Error unsubscribing prompt from favorites:', error);
+      }
     }
   };
 
@@ -624,6 +744,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       user,
       isLoading,
       login,
+      register,
       logout,
       updateUserProfile,
       prompts,
