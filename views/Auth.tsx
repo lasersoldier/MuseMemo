@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Cpu, ArrowRight, Mail, Lock, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { useStore } from '../store';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export const AuthView: React.FC = () => {
   const { login, register, isLoading } = useStore();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,7 +61,7 @@ export const AuthView: React.FC = () => {
                      <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <Cpu size={36} className="text-stone-200 relative z-10" />
                 </div>
-                <h1 className="text-4xl font-bold text-white mb-2 tracking-tighter">MuseMemo</h1>
+                <h1 className="text-4xl font-bold text-white mb-2 tracking-tighter">{t.appName}</h1>
                 <p className="text-stone-500 font-mono text-xs uppercase tracking-[0.2em]">Neural Interface Access</p>
             </div>
 
@@ -84,7 +86,7 @@ export const AuthView: React.FC = () => {
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">Operator ID (Email)</label>
+                        <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">{t.email}</label>
                         <div className="relative group">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-600 group-focus-within:text-white transition-colors" size={16} />
                             <input 
@@ -99,7 +101,7 @@ export const AuthView: React.FC = () => {
                     </div>
                     
                     <div>
-                        <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">Access Code (Password)</label>
+                        <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">{t.password}</label>
                         <div className="relative group">
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-600 group-focus-within:text-white transition-colors" size={16} />
                             <input 
@@ -123,7 +125,7 @@ export const AuthView: React.FC = () => {
                     {/* 注册模式下显示确认密码字段 */}
                     {mode === 'register' && (
                         <div>
-                            <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">Confirm Password</label>
+                            <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">确认密码</label>
                             <div className="relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-600 group-focus-within:text-white transition-colors" size={16} />
                                 <input 
@@ -150,10 +152,10 @@ export const AuthView: React.FC = () => {
                         disabled={isLoading || !email || !password || (mode === 'register' && !confirmPassword)}
                         className="w-full py-4 bg-white text-black rounded-xl font-bold tracking-wide hover:bg-stone-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
-                        {isLoading ? 'Processing...' : mode === 'login' ?
-                            <>SECURE ACCESS <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
+                        {isLoading ? '处理中...' : mode === 'login' ?
+                            <>安全访问 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
                             :
-                            <>CREATE ACCOUNT <UserPlus size={16} className="group-hover:translate-x-1 transition-transform" /></>
+                            <>创建账户 <UserPlus size={16} className="group-hover:translate-x-1 transition-transform" /></>
                         }
                     </button>
                 </form>

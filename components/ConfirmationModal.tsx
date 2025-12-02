@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal } from './Modal';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -18,10 +19,13 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onConfirm,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   danger = false
 }) => {
+  const { t } = useLanguage();
+  const finalConfirmText = confirmText || t.confirm;
+  const finalCancelText = cancelText || t.cancel;
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className="space-y-6">
@@ -31,17 +35,13 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             onClick={onClose}
             className="px-5 py-2.5 text-sm font-medium text-stone-500 hover:text-stone-300 transition-colors"
           >
-            {cancelText}
+            {finalCancelText}
           </button>
           <button
             onClick={onConfirm}
-            className={`px-6 py-2.5 rounded-xl text-sm hover:opacity-90 transition-all font-bold shadow-lg ${
-              danger
-                ? 'bg-red-500 text-white hover:bg-red-600 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                : 'bg-white text-black hover:bg-blue-50 shadow-[0_0_15px_rgba(255,255,255,0.2)]'
-            }`}
+            className={`px-6 py-2.5 rounded-xl text-sm hover:opacity-90 transition-all font-bold shadow-lg ${danger ? 'bg-red-500 text-white hover:bg-red-600 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-white text-black hover:bg-blue-50 shadow-[0_0_15px_rgba(255,255,255,0.2)]'}`}
           >
-            {confirmText}
+            {finalConfirmText}
           </button>
         </div>
       </div>

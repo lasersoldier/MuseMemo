@@ -1,8 +1,10 @@
 import React from 'react';
 import { LayoutGrid, Database, LogOut, User, Cpu, Settings, BookOpen } from 'lucide-react';
 import { useStore } from '../store';
+import { useLanguage } from '../i18n/LanguageContext';
 import { AuthView } from '../views/Auth';
 import { TutorialOverlay } from './TutorialOverlay';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,6 +14,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange }) => {
   const { user, logout, startTutorial } = useStore();
+  const { t } = useLanguage();
 
   if (!user) {
     return <AuthView />;
@@ -30,8 +33,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewCha
               <Cpu size={20} />
             </div>
             <div className="hidden lg:block">
-              <span className="text-xl font-bold tracking-tight text-white block">MuseMemo</span>
-              <span className="text-[10px] text-stone-500 font-mono uppercase tracking-widest">v2.1.0 [Online]</span>
+              <span className="text-xl font-bold tracking-tight text-white block">{t.appName}</span>
+              <span className="text-[10px] text-stone-500 font-mono uppercase tracking-widest">{t.version}</span>
             </div>
           </div>
 
@@ -42,7 +45,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewCha
               className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group border ${currentView === 'myspace' ? 'bg-white/10 border-white/10 text-white shadow-[0_0_15px_rgba(0,0,0,0.5)]' : 'border-transparent text-stone-500 hover:bg-white/5 hover:text-stone-300'}`}
             >
               <LayoutGrid size={20} className={currentView === 'myspace' ? 'text-white' : 'text-stone-500 group-hover:text-stone-300'} />
-              <span className="hidden lg:block font-medium tracking-wide">My Space</span>
+              <span className="hidden lg:block font-medium tracking-wide">{t.mySpace}</span>
               {currentView === 'myspace' && <div className="hidden lg:block ml-auto w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></div>}
             </button>
             <button
@@ -51,7 +54,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewCha
               className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group border ${currentView === 'library' ? 'bg-white/10 border-white/10 text-white shadow-[0_0_15px_rgba(0,0,0,0.5)]' : 'border-transparent text-stone-500 hover:bg-white/5 hover:text-stone-300'}`}
             >
               <Database size={20} className={currentView === 'library' ? 'text-white' : 'text-stone-500 group-hover:text-stone-300'} />
-              <span className="hidden lg:block font-medium tracking-wide">Nexus Library</span>
+              <span className="hidden lg:block font-medium tracking-wide">{t.nexusLibrary}</span>
             </button>
           </nav>
         </div>
@@ -68,8 +71,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewCha
                   <BookOpen size={18} className="text-blue-400" />
                 </div>
                 <div className="hidden lg:block text-left">
-                  <p className="text-sm font-bold text-stone-200 group-hover:text-white">Tutorial</p>
-                  <p className="text-[10px] text-stone-500">Learn the basics</p>
+                  <p className="text-sm font-bold text-stone-200 group-hover:text-white">{t.tutorial}</p>
+                  <p className="text-[10px] text-stone-500">{t.tutorialSubtitle}</p>
                 </div>
               </button>
             </div>
@@ -89,8 +92,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewCha
                 <p className="text-sm font-bold text-stone-200 group-hover:text-white transition-colors">{user.full_name || 'Operator'}</p>
                 <p className="text-[10px] text-stone-500 uppercase tracking-wider">{user.email?.split('@')[0]}</p>
               </div>
-              <div className="ml-auto text-stone-600 group-hover:text-white hidden lg:block">
-                <Settings size={14} />
+              <div className="ml-auto hidden lg:flex items-center gap-2">
+                <LanguageSwitcher />
+                <div className="text-stone-600 group-hover:text-white">
+                  <Settings size={14} />
+                </div>
               </div>
             </div>
           </div>

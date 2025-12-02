@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StoreProvider } from './store';
+import { LanguageProvider } from './i18n/LanguageContext';
 import { Layout } from './components/Layout';
 import { MySpace } from './views/MySpace';
 import { PublicLibrary } from './views/PublicLibrary';
@@ -10,20 +11,22 @@ const AppContent: React.FC = () => {
 
   return (
     <Layout currentView={currentView} onViewChange={setCurrentView}>
-        <div className="w-full h-full animate-in fade-in duration-500">
-            {currentView === 'myspace' && <MySpace />}
-            {currentView === 'library' && <PublicLibrary />}
-            {currentView === 'profile' && <ProfileView />}
-        </div>
+      <div className="w-full h-full animate-in fade-in duration-500">
+        {currentView === 'myspace' && <MySpace />}
+        {currentView === 'library' && <PublicLibrary />}
+        {currentView === 'profile' && <ProfileView />}
+      </div>
     </Layout>
   );
 };
 
 const App: React.FC = () => {
   return (
-    <StoreProvider>
-      <AppContent />
-    </StoreProvider>
+    <LanguageProvider>
+      <StoreProvider>
+        <AppContent />
+      </StoreProvider>
+    </LanguageProvider>
   );
 };
 

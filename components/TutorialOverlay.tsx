@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store';
+import { useLanguage } from '../i18n/LanguageContext';
 import { X, ChevronRight } from 'lucide-react';
 
 interface TutorialStep {
@@ -92,7 +93,89 @@ const STEPS: TutorialStep[] = [
 
 export const TutorialOverlay: React.FC = () => {
     const { isTutorialActive, tutorialStep, nextTutorialStep, endTutorial, setTutorialStep } = useStore();
+    const { t } = useLanguage();
     const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+
+    // Get translated tutorial steps
+    const STEPS = [
+        {
+            targetId: 'center',
+            title: t.tutorialWelcomeTitle,
+            content: t.tutorialWelcomeContent,
+            position: 'center',
+            action: 'next'
+        },
+        {
+            targetId: 'nav-library',
+            title: t.tutorialLibraryTitle,
+            content: t.tutorialLibraryContent,
+            position: 'right',
+            action: 'click'
+        },
+        {
+            targetId: 'tutorial-first-prompt-card',
+            title: t.tutorialViewPromptsTitle,
+            content: t.tutorialViewPromptsContent,
+            position: 'bottom',
+            action: 'next'
+        },
+        {
+            targetId: 'tutorial-view-btn',
+            title: t.tutorialPreviewTitle,
+            content: t.tutorialPreviewContent,
+            position: 'left',
+            action: 'click'
+        },
+        {
+            targetId: 'tutorial-preview-modal-close',
+            title: t.tutorialClosePreviewTitle,
+            content: t.tutorialClosePreviewContent,
+            position: 'top',
+            action: 'click'
+        },
+        {
+            targetId: 'tutorial-add-prompt-btn',
+            title: t.tutorialAcquireTitle,
+            content: t.tutorialAcquireContent,
+            position: 'left',
+            action: 'click'
+        },
+        {
+            targetId: 'nav-myspace',
+            title: t.tutorialMySpaceTitle,
+            content: t.tutorialMySpaceContent,
+            position: 'right',
+            action: 'click'
+        },
+        {
+            targetId: 'tutorial-model-bubble',
+            title: t.tutorialSelectModelTitle,
+            content: t.tutorialSelectModelContent,
+            position: 'bottom',
+            action: 'click'
+        },
+        {
+            targetId: 'tutorial-category-bubble',
+            title: t.tutorialSelectCategoryTitle,
+            content: t.tutorialSelectCategoryContent,
+            position: 'bottom',
+            action: 'click'
+        },
+        {
+            targetId: 'tutorial-copy-prompt-btn',
+            title: t.tutorialCopyTitle,
+            content: t.tutorialCopyContent,
+            position: 'left',
+            action: 'click'
+        },
+        {
+            targetId: 'center',
+            title: t.tutorialCompleteTitle,
+            content: t.tutorialCompleteContent,
+            position: 'center',
+            action: 'next'
+        }
+    ];
 
     const currentStep = STEPS[tutorialStep];
 

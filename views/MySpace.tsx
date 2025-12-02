@@ -5,9 +5,11 @@ import { BubbleCanvas } from '../components/BubbleCanvas';
 import { ArrowLeft, Plus, Copy, Trash2, Edit2, ExternalLink, Sparkles, Hash } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export const MySpace: React.FC = () => {
   const { savedPrompts, updatePrompt, deletePrompt, incrementUsage, addPrompt, unsubscribePrompt, user } = useStore();
+  const { t } = useLanguage();
   const [navState, setNavState] = useState<NavState>({
     level: 'models',
     selectedModel: null,
@@ -149,9 +151,9 @@ export const MySpace: React.FC = () => {
         </button>
       )}
       <div className="flex flex-col">
-        <span className="text-[10px] text-blue-400 font-bold tracking-[0.2em] uppercase mb-1 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]">My Space</span>
+        <span className="text-[10px] text-blue-400 font-bold tracking-[0.2em] uppercase mb-1 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]">{t.mySpace}</span>
         <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-stone-400">
-          {navState.level === 'models' && 'Select Neural Core'}
+          {navState.level === 'models' && t.selectNeuralCore}
           {navState.level === 'categories' && navState.selectedModel}
           {navState.level === 'list' && `${navState.selectedModel} / ${navState.selectedCategory}`}
         </h2>
@@ -173,7 +175,7 @@ export const MySpace: React.FC = () => {
           </div>
           {/* Dropdown menu with no gap between icon and menu */}
           <div className="hidden group-hover:block absolute right-0 mt-0 w-80 bg-[#0A0A0B]/90 backdrop-blur-2xl rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] border border-white/10 p-1 z-50 ring-1 ring-white/5">
-            <p className="text-[10px] font-bold text-stone-500 px-4 py-3 uppercase tracking-wider border-b border-white/5">Recent Usage</p>
+            <p className="text-[10px] font-bold text-stone-500 px-4 py-3 uppercase tracking-wider border-b border-white/5">{t.recentUsage}</p>
             <div className="p-1">
               {savedPrompts.sort((a, b) => new Date(b.lastUsed).getTime() - new Date(a.lastUsed).getTime()).slice(0, 3).map(p => (
                 <div key={p.id} className="px-3 py-2.5 hover:bg-white/5 rounded-xl cursor-pointer flex flex-col gap-0.5 group/item transition-colors">
@@ -188,7 +190,7 @@ export const MySpace: React.FC = () => {
                       }}
                       className={`ml-2 p-1.5 rounded-lg text-xs font-bold transition-all ${copiedId === p.id ? 'bg-white text-black' : 'bg-white/5 text-stone-300 hover:bg-white/10 hover:text-white border border-white/5 hover:border-white/20'}`}
                     >
-                      {copiedId === p.id ? 'COPIED' : 'COPY'}
+                      {copiedId === p.id ? t.copied : t.copy}
                     </button>
                   </div>
                   <div className="flex justify-between items-center">
@@ -216,7 +218,7 @@ export const MySpace: React.FC = () => {
                   }}
                   className="flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-xl text-sm hover:bg-stone-200 transition-all font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:-translate-y-0.5 active:translate-y-0"
                 >
-                  <Plus size={16} /> New Prompt
+                  <Plus size={16} /> {t.newPrompt}
                 </button>
               </div>
             )}
@@ -233,7 +235,7 @@ export const MySpace: React.FC = () => {
             <div className="flex justify-between items-center mb-8 bg-gradient-to-r from-zinc-900/0 via-zinc-900/0 to-zinc-900/0">
               <div className="flex items-center gap-3">
                 <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></span>
-                <span className="text-sm text-stone-400 font-mono tracking-wider">{filteredPrompts.length} SYSTEMS ACTIVE</span>
+                <span className="text-sm text-stone-400 font-mono tracking-wider">{filteredPrompts.length} {t.systemsActive}</span>
               </div>
               <button
                 onClick={() => {
@@ -242,7 +244,7 @@ export const MySpace: React.FC = () => {
                 }}
                 className="flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-xl text-sm hover:bg-stone-200 transition-all font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:-translate-y-0.5 active:translate-y-0"
               >
-                <Plus size={16} /> New Prompt
+                <Plus size={16} /> {t.newPrompt}
               </button>
             </div>
 
@@ -287,8 +289,8 @@ export const MySpace: React.FC = () => {
                       {user?.subscription_tier === 'admin' || (prompt.author === 'user' && prompt.userId === user?.id) ? (
                         <button
                           onClick={() => {
-                            setConfirmTitle('Delete Prompt');
-                            setConfirmMessage('Are you sure you want to delete this prompt? This action cannot be undone.');
+                            setConfirmTitle(t.deletePromptTitle);
+                            setConfirmMessage(t.deletePromptMessage);
                             setConfirmAction(() => deletePrompt(prompt.id));
                             setConfirmDanger(true);
                             setShowConfirmModal(true);
@@ -300,15 +302,15 @@ export const MySpace: React.FC = () => {
                       ) : (
                         <button
                           onClick={() => {
-                            setConfirmTitle('Unsubscribe Prompt');
-                            setConfirmMessage('Are you sure you want to unsubscribe from this prompt?');
+                            setConfirmTitle(t.unsubscribePromptTitle);
+                            setConfirmMessage(t.unsubscribePromptMessage);
                             setConfirmAction(() => unsubscribePrompt(prompt.id));
                             setConfirmDanger(false);
                             setShowConfirmModal(true);
                           }}
                           className="p-2 text-stone-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
                         >
-                          <span className="text-xs font-bold">UNSUB</span>
+                          <span className="text-xs font-bold">{t.unsubscribe}</span>
                         </button>
                       )}
                     </div>
@@ -323,21 +325,21 @@ export const MySpace: React.FC = () => {
                   <div className="flex justify-between items-center relative z-10">
                     <span className="text-[10px] text-stone-600 font-bold uppercase tracking-widest flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-stone-700"></span>
-                      Uses: {prompt.usageCount}
+                      {t.uses}: {prompt.usageCount}
                     </span>
                     <div className="flex gap-3">
                       <button
                         onClick={() => openAiLink(prompt.model)}
                         className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-stone-500 hover:text-white hover:bg-white/5 transition-colors"
                       >
-                        <ExternalLink size={14} /> LINK
+                        <ExternalLink size={14} /> {t.link}
                       </button>
                       <button
                         id={prompt.id === TUTORIAL_PROMPT_ID ? "tutorial-copy-prompt-btn" : undefined}
                         onClick={() => handleCopy(prompt)}
                         className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-lg ${copiedId === prompt.id ? 'bg-white text-black scale-95' : 'bg-white/5 text-stone-300 hover:bg-white/10 hover:text-white border border-white/5 hover:border-white/20'}`}
                       >
-                        {copiedId === prompt.id ? 'COPIED' : <><Copy size={14} /> COPY</>}
+                        {copiedId === prompt.id ? t.copied : <><Copy size={14} /> {t.copy}</>}
                       </button>
                     </div>
                   </div>
@@ -351,22 +353,22 @@ export const MySpace: React.FC = () => {
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        title={editingPrompt && (editingPrompt as any).id ? 'Edit Prompt' : 'New Prompt'}
+        title={editingPrompt && (editingPrompt as any).id ? t.editPrompt : t.newPrompt}
       >
         <div className="space-y-5">
           <div>
-            <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">Title</label>
+            <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">{t.title}</label>
             <input
               type="text"
               className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 text-stone-200 transition-all placeholder-stone-700 text-sm font-medium"
-              placeholder="Operation Name"
+              placeholder={t.operationName}
               value={editingPrompt?.title || ''}
               onChange={e => setEditingPrompt({ ...editingPrompt, title: e.target.value })}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">Target Core</label>
+              <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">{t.targetCore}</label>
               <select
                 className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-xl text-sm text-stone-300 focus:outline-none focus:border-blue-500/50 appearance-none"
                 value={editingPrompt?.model || 'ChatGPT'}
@@ -379,43 +381,43 @@ export const MySpace: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">Sector Tag</label>
+              <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">{t.sectorTag}</label>
               <select
                 className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-xl text-sm text-stone-300 focus:outline-none focus:border-blue-500/50 appearance-none"
                 value={editingPrompt?.tags?.[0] || 'General'}
                 onChange={e => setEditingPrompt({ ...editingPrompt, tags: [e.target.value] })}
               >
-                <option value="General">General</option>
-                <option value="Creative">Creative</option>
-                <option value="Design">Design</option>
-                <option value="Code">Code</option>
+                <option value="General">{t.general}</option>
+                <option value="Creative">{t.creative}</option>
+                <option value="Design">{t.design}</option>
+                <option value="Code">{t.code}</option>
                 <option value="React">React</option>
-                <option value="Writing">Writing</option>
-                <option value="Content">Content</option>
+                <option value="Writing">{t.writing}</option>
+                <option value="Content">{t.content}</option>
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">Instruction Set</label>
+            <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">{t.instructionSet}</label>
             <textarea
               className="w-full h-40 px-4 py-3 bg-black/50 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500/50 text-stone-300 transition-all font-mono text-sm resize-none placeholder-stone-700 leading-relaxed"
-              placeholder="Input system parameters..."
+              placeholder={t.inputSystemParameters}
               value={editingPrompt?.content || ''}
               onChange={e => setEditingPrompt({ ...editingPrompt, content: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">Sample AI Response</label>
+            <label className="block text-[10px] font-bold text-stone-500 mb-2 uppercase tracking-widest">{t.sampleAiResponse}</label>
             <textarea
               className="w-full h-32 px-4 py-3 bg-black/50 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500/50 text-stone-300 transition-all font-mono text-sm resize-none placeholder-stone-700 leading-relaxed"
-              placeholder="Input pre-written AI response example..."
+              placeholder={t.inputPrewrittenResponse}
               value={editingPrompt?.sampleResponse || ''}
               onChange={e => setEditingPrompt({ ...editingPrompt, sampleResponse: e.target.value })}
             />
           </div>
           <div className="pt-4 flex justify-end gap-3 border-t border-white/5 mt-2">
-            <button onClick={() => setShowEditModal(false)} className="px-5 py-2.5 text-sm font-medium text-stone-500 hover:text-stone-300 transition-colors">Abort</button>
-            <button onClick={handleSaveEdit} className="px-6 py-2.5 bg-white text-black rounded-xl text-sm hover:bg-blue-50 transition-all font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)]">Confirm Entry</button>
+            <button onClick={() => setShowEditModal(false)} className="px-5 py-2.5 text-sm font-medium text-stone-500 hover:text-stone-300 transition-colors">{t.abort}</button>
+            <button onClick={handleSaveEdit} className="px-6 py-2.5 bg-white text-black rounded-xl text-sm hover:bg-blue-50 transition-all font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)]">{t.confirmEntry}</button>
           </div>
         </div>
       </Modal>
