@@ -28,6 +28,7 @@ export interface UserProfile {
   total_usage: number; // Stored in DB to avoid calculating every time
   subscription_tier: 'free' | 'pro' | 'admin';
   created_at: string;
+  tutorial_completed?: boolean;
 }
 
 export interface BubbleNode extends d3.SimulationNodeDatum {

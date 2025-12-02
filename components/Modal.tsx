@@ -6,9 +6,10 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  closeButtonId?: string;
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, closeButtonId }) => {
   if (!isOpen) return null;
 
   return (
@@ -16,15 +17,16 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
       <div className="bg-[#121214] w-full max-w-lg rounded-2xl shadow-2xl border border-white/10 p-6 m-4 relative animate-in fade-in zoom-in duration-200">
         <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
           <h3 className="text-xl font-medium text-stone-200 tracking-tight">{title}</h3>
-          <button 
-            onClick={onClose} 
+          <button
+            id={closeButtonId}
+            onClick={onClose}
             className="p-1 rounded-full hover:bg-white/10 text-stone-500 hover:text-white transition-colors"
           >
             <X size={20} />
           </button>
         </div>
         <div>
-            {children}
+          {children}
         </div>
       </div>
     </div>

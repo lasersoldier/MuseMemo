@@ -36,11 +36,11 @@ export const BubbleCanvas: React.FC<BubbleCanvasProps> = ({ data, onNodeClick })
 
     const { width, height } = dimensions;
     const maxVal = d3.max(data, d => d.value) || 1;
-    
+
     // Scale for bubble sizes
     const radiusScale = d3.scaleSqrt()
       .domain([0, maxVal])
-      .range([55, 110]); 
+      .range([55, 110]);
 
     const nodes = data.map(d => ({
       ...d,
@@ -50,7 +50,7 @@ export const BubbleCanvas: React.FC<BubbleCanvasProps> = ({ data, onNodeClick })
     }));
 
     const simulation = d3.forceSimulation<any>(nodes)
-      .force('charge', d3.forceManyBody().strength(5)) 
+      .force('charge', d3.forceManyBody().strength(5))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collide', d3.forceCollide().radius((d: any) => d.r + 5).strength(0.8))
       .force('x', d3.forceX(width / 2).strength(0.05))
@@ -80,6 +80,12 @@ export const BubbleCanvas: React.FC<BubbleCanvasProps> = ({ data, onNodeClick })
       .enter()
       .append('g')
       .attr('class', 'node cursor-pointer group')
+      .attr('id', (d: any) => {
+        // Add IDs for tutorial targeting
+        if (d.id === 'ChatGPT') return 'tutorial-model-bubble';
+        if (d.id === 'Tutorial') return 'tutorial-category-bubble';
+        return null;
+      })
       .call(drag as any)
       .on('click', (event, d) => {
         onNodeClick(d);
@@ -89,16 +95,16 @@ export const BubbleCanvas: React.FC<BubbleCanvasProps> = ({ data, onNodeClick })
     const defs = svg.append('defs');
 
     const createSubtleGrad = (id: string, color: string) => {
-        const grad = defs.append('radialGradient')
-            .attr('id', id)
-            .attr('cx', '50%')
-            .attr('cy', '50%')
-            .attr('r', '50%');
+      const grad = defs.append('radialGradient')
+        .attr('id', id)
+        .attr('cx', '50%')
+        .attr('cy', '50%')
+        .attr('r', '50%');
 
-        // Center is almost clear (5% opacity)
-        grad.append('stop').attr('offset', '0%').attr('stop-color', color).attr('stop-opacity', 0.05);
-        // Edge is slightly more visible (25% opacity)
-        grad.append('stop').attr('offset', '100%').attr('stop-color', color).attr('stop-opacity', 0.25);
+      // Center is almost clear (5% opacity)
+      grad.append('stop').attr('offset', '0%').attr('stop-color', color).attr('stop-opacity', 0.05);
+      // Edge is slightly more visible (25% opacity)
+      grad.append('stop').attr('offset', '100%').attr('stop-color', color).attr('stop-opacity', 0.25);
     };
 
     createSubtleGrad('grad-blue', '#3B82F6');
@@ -108,11 +114,11 @@ export const BubbleCanvas: React.FC<BubbleCanvasProps> = ({ data, onNodeClick })
     createSubtleGrad('grad-gray', '#94a3b8');
 
     const getColorKey = (c: string) => {
-        if (c.includes('3B82F6')) return 'blue';
-        if (c.includes('10B981')) return 'green';
-        if (c.includes('8B5CF6')) return 'purple';
-        if (c.includes('F59E0B')) return 'orange';
-        return 'gray';
+      if (c.includes('3B82F6')) return 'blue';
+      if (c.includes('10B981')) return 'green';
+      if (c.includes('8B5CF6')) return 'purple';
+      if (c.includes('F59E0B')) return 'orange';
+      return 'gray';
     }
 
     // 1. The Sphere Body
@@ -124,11 +130,11 @@ export const BubbleCanvas: React.FC<BubbleCanvasProps> = ({ data, onNodeClick })
       .attr('stroke-opacity', 0.6) // Semi-transparent border
       .attr('class', 'transition-all duration-300 ease-out')
       // Hover effect managed via CSS/D3 events for smoother interaction
-      .on('mouseover', function() {
-         d3.select(this).attr('stroke-opacity', 1).attr('stroke-width', 2);
+      .on('mouseover', function () {
+        d3.select(this).attr('stroke-opacity', 1).attr('stroke-width', 2);
       })
-      .on('mouseout', function() {
-         d3.select(this).attr('stroke-opacity', 0.6).attr('stroke-width', 1.5);
+      .on('mouseout', function () {
+        d3.select(this).attr('stroke-opacity', 0.6).attr('stroke-width', 1.5);
       });
 
     // 2. Simple Label Text
@@ -143,7 +149,7 @@ export const BubbleCanvas: React.FC<BubbleCanvasProps> = ({ data, onNodeClick })
       .style('text-shadow', '0px 2px 4px rgba(0,0,0,0.8)') // Essential for readability on dark
       .style('pointer-events', 'none')
       .attr('class', 'select-none font-sans');
-      
+
     // 3. Count Text (Small subtitle)
     nodeGroup.append('text')
       .text(d => d.value > 0 ? d.value : '')
@@ -166,12 +172,12 @@ export const BubbleCanvas: React.FC<BubbleCanvasProps> = ({ data, onNodeClick })
 
   return (
     <div ref={wrapperRef} className="w-full h-full relative overflow-hidden">
-        <svg 
-            ref={svgRef} 
-            width={dimensions.width} 
-            height={dimensions.height}
-            className="w-full h-full block touch-none"
-        />
+      <svg
+        ref={svgRef}
+        width={dimensions.width}
+        height={dimensions.height}
+        className="w-full h-full block touch-none"
+      />
     </div>
   );
 };
